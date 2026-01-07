@@ -1,0 +1,29 @@
+services:
+  customer-service:
+    build: ../services/customer-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  ai-agent-service:
+    build: ../services/ai-agent-service
+    environment:
+      - CUSTOMER_BASE=http://customer-service:8082
+      - AGENT_AUDIT_LOG=/var/log/agent_audit.jsonl
+      - AGENT_MODE=rules
+    volumes:
+      - ./logs:/var/log
+    ports:
+      - "8090:8090"
+    depends_on:
+      - customer-service
+
+  frontend:
+    build: ../frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - customer-service
+      - ai-agent-service
+
